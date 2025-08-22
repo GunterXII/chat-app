@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app-wrapper">
+    <!-- Lista utenti (mostrata sopra su mobile, sidebar su desktop) -->
+    <aside id="sidebar">
+      <h3>Online</h3>
+      <ul id="userList"></ul>
+    </aside>
+
+    <!-- Card chat -->
+    <form id="chatForm">
+      <div id="chat"><!-- messaggi --></div>
+      <div id="typingIndicator" aria-live="polite" style="min-height:18px"></div>
+
+      <div class="messaggi">
+        <input type="text" id="messaggio" placeholder="Scrivi un messaggio..." autocomplete="off">
+        <button type="submit" aria-label="Invia"><img src="icons8-invia-25.png" alt="Invia" width="20"></button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // username
+    let username = prompt("Inserisci il tuo nome utente:");
+    if (!username || username.trim() === "") username = "Anonimo";
+
+    const socket = io();
+    const form = document.getElementById("chatForm");
+    const input = document.getElementById("messaggio");
+    const chat = document.getElementById("chat");
+    const userList = document.getElementById("userList");
+    const typingIndicator = document.getElementById("typingIndicator");
+
+    // Appena connesso, registra il nome utente sul server
+    socket.on("connect", () => {
+      socket.emit("register", username);
+    });
+
+    // Ricezione lista utenti aggiornata
+    socket.on("users", (list) => {
+      // pulisci
+      userList.innerHTML = "";
+      list.forEach((name) => {
+        const li = document.createElement("li");
+        li.textContent = name;
+        // evidenzia il tuo username
+        if (name === username) li.classList.add("me");
+        userList.appendChild(li);
+      });
+    });
+
+    // ricezione messaggi (idem tuo codice)
+    socket.on("messaggio", (msg) => {
+      const div = document.createElement("div");
+      div.classList.add("msg-container");
+
+      const p = document.createElement("p");
+      p.classList.add("msg-text");
+      p.textContent = msg.testo;
+
+      const meta = document.createElement("div");
+      meta.classList.add("meta");
+      meta.innerHTML = `<strong>${msg.nome}</strong> • <span class="ora">${msg.ora}</span>`;
+
+      if (msg.nome === username) div.classList.add("mio");
+      else div.classList.add("altro");
+
+      div.appendChild(p);
+      div.appendChild(meta);
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    });
+
+    /* TYPING (se lo stai usando) - debounce semplice */
+    let typingTimeout = null;
+    const TYPING_DELAY = 800;
+    input.addEventListener("input", () => {
+      socket.emit("typing", { nome: username, typing: true });
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        socket.emit("typing", { nome: username, typing: false });
+      }, TYPING_DELAY);
+    });
+
+    socket.on("typing", (data) => {
+      // gestione semplice: mostra il nome di chi sta scrivendo
+      // (qui manteniamo la logica che già avevi)
+      // se vuoi la stessa mappa/set usa il codice che ti avevo dato prima
+      if (data.typing) typingIndicator.textContent = `${data.nome} sta scrivendo...`;
+      else typingIndicator.textContent = "";
+    });
+
+    // invio messaggi (il time lo calcoli prima)
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const now = new Date();
+      const ore = now.getHours().toString().padStart(2, "0");
+      const minuti = now.getMinutes().toString().padStart(2, "0");
+      const time = `${ore}:${minuti}`;
+
+      const testo = input.value;
+      if (testo.trim() !== "") {
+        socket.emit("messaggio", { nome: username, testo: testo, ora: time });
+        // dopo invio comunica che hai smesso di digitare
+        socket.emit("typing", { nome: username, typing: false });
+      }
+      input.value = "";
+      input.focus();
+    });
+  </script>
+</body>
+</html>

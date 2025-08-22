@@ -1,0 +1,181 @@
+:root{
+  --first: #233142;
+  --second: #455d7a;
+  --third: #f95959;
+  --fourth: #e3e3e3;
+  --text-dark: #233142;
+  --radius: 14px;
+  --gap: 10px;
+}
+
+/* base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  background:var(--first);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  color:#fff;
+}
+
+/* layout chat */
+#chatForm{
+  width:100%;
+  max-width:720px;
+  height:92vh;
+  display:flex;
+  flex-direction:column;
+  background:var(--second);
+  border-radius:16px;
+  overflow:hidden;
+}
+
+/* area messaggi: il punto importante è che è un flex column */
+#chat{
+  flex:1 1 auto;
+  padding:18px;
+  display:flex;
+  flex-direction:column;    /* child = .msg-container */
+  gap:12px;
+  overflow-y:auto;
+  align-items:flex-start;   /* default: all start (gli altri) */
+}
+
+/* singolo messaggio: il container è il figlio diretto del flex */
+.msg-container{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:10px 14px;
+  max-width:75%;
+  box-shadow:0 4px 12px rgba(0,0,0,0.12);
+  animation: slideUp .12s ease both;
+  word-wrap:break-word;
+}
+
+/* testo e meta */
+.msg-text{ margin:0; font-size:0.98rem; line-height:1.3; }
+.meta{ font-size:0.78rem; opacity:0.85; display:flex; gap:8px; justify-content:flex-end; }
+
+/* IMPORTANT: qui definiamo il posizionamento vero delle bolle */
+/* messaggi TUOI -> destra */
+.msg-container.mio{
+  align-self:flex-end;               /* <<--- spinge la bolla a destra */
+  background: linear-gradient(135deg,var(--third), #e14a4a);
+  color:white;
+  border-radius:16px 16px 4px 16px;
+  text-align:right;
+}
+
+/* messaggi ALTRI -> sinistra */
+.msg-container.altro{
+  align-self:flex-start;             /* <<--- spinge la bolla a sinistra */
+  background:var(--fourth);
+  color:var(--text-dark);
+  border-radius:16px 16px 16px 4px;
+  text-align:left;
+}
+
+/* barra input */
+.messaggi{
+  display:flex;
+  gap:12px;
+  padding:12px;
+  align-items:center;
+  background:rgba(0,0,0,0.03);
+  border-top:1px solid rgba(255,255,255,0.03);
+}
+.messaggi input{ flex:1; padding:12px 16px; border-radius:999px; border:none; outline:none; background:#fff; color:var(--text-dark)}
+.messaggi button{ width:44px; height:44px; border-radius:50%; border:none; background:var(--third); display:grid; place-items:center; cursor:pointer }
+
+/* anim */
+@keyframes slideUp { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+
+/* responsive */
+@media(min-width:700px){
+  .msg-container{ max-width:60% }
+}
+#typingIndicator{
+  min-height:18px;
+  padding: 4px 14px;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.9);
+  opacity: 0.95;
+  display: flex;
+  align-items: center;
+  gap:8px;
+  padding-left:18px;
+}
+
+/* se vuoi testo più leggero quando è inattivo */
+#typingIndicator.empty { color: rgba(255,255,255,0.45); }
+/* wrapper per sidebar + chat */
+#app-wrapper{
+  width:100%;
+  max-width:1100px;
+  display:flex;
+  gap:18px;
+  align-items:stretch;
+}
+
+/* sidebar utenti */
+#sidebar{
+  width:200px;
+  min-width:150px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+  border-radius:12px;
+  padding:12px;
+  color:var(--fourth);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  height:92vh;
+  box-sizing:border-box;
+  overflow:auto;
+}
+
+/* lista */
+#sidebar h3{ margin:0 0 8px 0; color:var(--fourth) }
+#userList{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px }
+#userList li{
+  padding:8px 10px;
+  border-radius:10px;
+  background: rgba(0,0,0,0.06);
+  color:var(--fourth);
+  font-weight:500;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* evidenzia il tuo nome */
+#userList li.me{
+  background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+/* responsive: su mobile metti la sidebar sopra o nascosta */
+@media (max-width:900px){
+  #app-wrapper{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  #sidebar{
+    width:100%;
+    height:auto;
+    border-radius:12px;
+    display:flex;
+    flex-direction:row;
+    gap:10px;
+    padding:8px;
+    overflow-x:auto;
+  }
+  #userList{ flex-direction:row; gap:8px }
+  #userList li{ white-space:nowrap; padding:6px 10px; }
+  #chatForm{ height:70vh } /* regolazione per mobile */
+}
