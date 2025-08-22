@@ -2,7 +2,9 @@
 
 💬 Chat in tempo reale con Node.js, Express e Socket.IO.  
 Messaggi con nome utente, orario e lista utenti online. UI moderna e responsive.
+## Live Demo
 
+Prova la chat online: https://chat-app-2-tomg.onrender.com/
 ## Funzionalità
 
 - Messaggi in tempo reale tra più utenti
